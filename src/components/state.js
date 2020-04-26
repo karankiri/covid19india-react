@@ -4,7 +4,7 @@ import Footer from './footer';
 import Level from './level';
 import MapExplorer from './mapexplorer';
 import Minigraph from './minigraph';
-import TimeSeries from './timeseries';
+import TimeSeriesExplorer from './timeseriesexplorer';
 
 import {MAP_META, STATE_CODES} from '../constants';
 import {
@@ -22,26 +22,15 @@ import {format, parse} from 'date-fns';
 import React, {useRef, useState} from 'react';
 import * as Icon from 'react-feather';
 import {Link, useParams} from 'react-router-dom';
-import {useLocalStorage} from 'react-use';
 import {useMeasure, useEffectOnce} from 'react-use';
 
 function State(props) {
   const mapRef = useRef();
-  const tsRef = useRef();
 
   const {stateCode} = useParams();
   const [allStateData, setAllStateData] = useState({});
   const [fetched, setFetched] = useState(false);
   const [timeseries, setTimeseries] = useState({});
-  const [graphOption, setGraphOption] = useState(1);
-  const [timeseriesMode, setTimeseriesMode] = useLocalStorage(
-    'timeseriesMode',
-    true
-  );
-  const [timeseriesLogMode, setTimeseriesLogMode] = useLocalStorage(
-    'timeseriesLogMode',
-    false
-  );
   const [stateData, setStateData] = useState({});
   const [testData, setTestData] = useState({});
   const [sources, setSources] = useState({});
@@ -128,6 +117,17 @@ function State(props) {
   function toggleShowAllDistricts() {
     setShowAllDistricts(!showAllDistricts);
   }
+
+  const getGridRowCount = () => {
+    const gridColumnCount = window.innerWidth >= 540 ? 3 : 2;
+    const districtCount =
+      (districtData[stateName] &&
+        Object.keys(districtData[stateName].districtData).length) ||
+      0;
+    const gridRowCount = Math.ceil(districtCount / gridColumnCount);
+    return gridRowCount;
+  };
+  const gridRowCount = getGridRowCount();
 
   return (
     <React.Fragment>
@@ -273,18 +273,18 @@ function State(props) {
 
           {fetched && (
             <div className="meta-secondary">
-              <div className="unknown">
+              <div className="alert">
                 <Icon.AlertCircle />
-                <div className="unknown-right">
+                <div className="alert-right">
                   Awaiting district details for{' '}
                   {districtData[stateName]?.districtData['Unknown']
                     ?.confirmed || '0'}{' '}
                   cases
                 </div>
               </div>
-              <div className="sources">
+              <div className="alert">
                 <Icon.Compass />
-                <div className="sources-right">
+                <div className="alert-right">
                   Data collected from sources{' '}
                   {sources.length > 0
                     ? Object.keys(sources[0]).map((key, index) => {
@@ -320,6 +320,11 @@ function State(props) {
                   <h2>Top districts</h2>
                   <div
                     className={`districts ${showAllDistricts ? 'is-grid' : ''}`}
+                    style={
+                      showAllDistricts
+                        ? {gridTemplateRows: `repeat(${gridRowCount}, 2rem)`}
+                        : {}
+                    }
                   >
                     {districtData[stateName]
                       ? Object.keys(districtData[stateName].districtData)
@@ -362,6 +367,21 @@ function State(props) {
                   </button>
                 </div>
                 <div className="district-bar-right">
+                  <div
+                    className="happy-sign fadeInUp"
+                    style={{animationDelay: '0.6s'}}
+                  >
+                    {timeseries
+                      .slice(-5)
+                      .every((day) => day.dailyconfirmed === 0) && (
+                      <div className="alert is-green">
+                        <Icon.Smile />
+                        <div className="alert-right">
+                          No new confirmed cases in the past five days
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   {
                     <DeltaBarGraph
                       timeseries={timeseries.slice(-5)}
@@ -383,71 +403,7 @@ function State(props) {
                 </Link>
               )}
 
-              <div className="TimeSeriesExplorer">
-                <div
-                  className="timeseries-header fadeInUp"
-                  style={{animationDelay: '2.5s'}}
-                  ref={tsRef}
-                >
-                  <div className="tabs">
-                    <div
-                      className={`tab ${graphOption === 1 ? 'focused' : ''}`}
-                      onClick={() => {
-                        setGraphOption(1);
-                      }}
-                    >
-                      <h4>Cumulative</h4>
-                    </div>
-                    <div
-                      className={`tab ${graphOption === 2 ? 'focused' : ''}`}
-                      onClick={() => {
-                        setGraphOption(2);
-                      }}
-                    >
-                      <h4>Daily</h4>
-                    </div>
-                  </div>
-
-                  <div className="scale-modes">
-                    <label className="main">Scale Modes</label>
-                    <div className="timeseries-mode">
-                      <label htmlFor="timeseries-mode">Uniform</label>
-                      <input
-                        type="checkbox"
-                        checked={timeseriesMode}
-                        className="switch"
-                        aria-label="Checked by default to scale uniformly."
-                        onChange={(event) => {
-                          setTimeseriesMode(!timeseriesMode);
-                        }}
-                      />
-                    </div>
-                    <div
-                      className={`timeseries-logmode ${
-                        graphOption !== 1 ? 'disabled' : ''
-                      }`}
-                    >
-                      <label htmlFor="timeseries-logmode">Logarithmic</label>
-                      <input
-                        type="checkbox"
-                        checked={graphOption === 1 && timeseriesLogMode}
-                        className="switch"
-                        disabled={graphOption !== 1}
-                        onChange={(event) => {
-                          setTimeseriesLogMode(!timeseriesLogMode);
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <TimeSeries
-                  timeseries={timeseries}
-                  type={graphOption}
-                  mode={timeseriesMode}
-                  logMode={timeseriesLogMode}
-                />
-              </div>
+              <TimeSeriesExplorer timeseries={timeseries} />
             </React.Fragment>
           )}
         </div>
