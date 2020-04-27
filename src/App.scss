@@ -973,13 +973,10 @@ h6 {
   }
 
   input {
-    background: #fff;
-    height: 2rem;
-    width: calc(100% - 4rem);
-    box-shadow: 0 10px 35px rgba(0,0,0,.1);
+    -moz-box-shadow: 0 10px 35px rgba(0, 0, 0, .1);
     -webkit-appearance: none !important;
-    -webkit-box-shadow: 0 10px 35px rgba(0,0,0,.1);
-    -moz-box-shadow: 0 10px 35px rgba(0,0,0,.1);
+    -webkit-box-shadow: 0 10px 35px rgba(0, 0, 0, .1);
+    background: #fff;
     border: 0;
     border-radius: 5px;
     box-shadow: 0 10px 35px rgba(0, 0, 0, .1);
@@ -2226,6 +2223,13 @@ table {
             stroke: $purple;
           }
         }
+
+        .tooltip-tested {
+          svg {
+            bottom: .3rem;
+            top: auto;
+          }
+        }
       }
 
       &.focused {
@@ -2243,6 +2247,11 @@ table {
         margin-right: 0;
       }
     }
+  }
+
+  #chart,
+  #legend {
+    filter: saturate(1.5);
   }
 
   .disclaimer {
@@ -2270,6 +2279,26 @@ table {
       stroke-width: 2px;
       width: 20px !important;
     }
+  }
+}
+
+.tooltip-tested {
+  pointer-events: all;
+
+  svg {
+    cursor: pointer;
+    height: .95em;
+    stroke-width: 3;
+    width: 1em;
+  }
+
+  .__react_component_tooltip {
+    font-family: 'archia';
+    font-size: 11px;
+    font-weight: 600;
+    padding: .25rem;
+    text-align: center;
+    width: 200px;
   }
 }
 
@@ -2312,6 +2341,23 @@ table {
   &.stickied {
     position: sticky !important;
     top: -6.5rem;
+  }
+
+  .alert {
+    margin-bottom: .5rem;
+    margin-left: auto;
+    margin-right: 0;
+    margin-top: .5rem;
+    width: 16rem;
+
+    svg {
+      margin-top: -.4rem;
+      width: 14px !important;
+    }
+
+    .alert-right {
+      width: 16rem;
+    }
   }
 }
 
@@ -2475,9 +2521,9 @@ input {
     flex-direction: column;
     left: .5rem;
     padding: .25rem;
+    pointer-events: none;
     position: absolute;
     top: .5rem;
-    z-index: -1;
 
     h2,
     h5,
@@ -2569,6 +2615,12 @@ input {
       h2,
       h6 {
         color: $purple;
+      }
+
+      .tooltip-tested {
+        svg {
+          width: 1em;
+        }
       }
     }
   }
@@ -2930,7 +2982,7 @@ footer {
       font-family: 'archia';
       font-size: 12px;
       font-weight: 900;
-      height: 2.05rem;
+      height: 2.19rem;
       margin: .2rem .1rem;
       padding: .5rem;
       padding-inline-start: 1px;
@@ -4340,6 +4392,10 @@ footer {
   }
 
   .MapExplorer {
+    .svg-parent {
+      width: 100%;
+    }
+
     .header {
       margin-top: 2rem;
     }
@@ -4912,7 +4968,7 @@ footer {
   .MapExplorer {
     #chart,
     #legend {
-      filter: invert(1) hue-rotate(180deg) url('#white-balance');
+      filter: invert(1) hue-rotate(180deg) saturate(1.5) url('#balance-color');
     }
 
     .legend {
@@ -4933,9 +4989,17 @@ footer {
         }
 
         svg {
-          stroke: #9673b9 !important;
+          stroke: #9673b9bb !important;
+
+          &:hover {
+            stroke: #9673b9 !important;
+          }
         }
       }
+    }
+
+    .disclaimer {
+      color: $gray-light-opaque;
     }
   }
 
@@ -5005,9 +5069,17 @@ footer {
     }
   }
 
-  select {
-    background: #1e1e30 !important;
-    border-color: #1e1e30 !important;
+  .trends-state-name,
+  .select {
+    select {
+      background: #1e1e30;
+      background-image: linear-gradient(45deg, transparent 50%, $gray 50%),
+      linear-gradient(135deg, $gray 50%, transparent 50%);
+      background-position: calc(100% - 13px) 50%, calc(100% - 8px) 50%;
+      background-repeat: no-repeat;
+      background-size: 5px 5px, 5px 5px;
+      border-color: #9494941a;
+    }
   }
 
   input {
@@ -5016,7 +5088,7 @@ footer {
       border: 2px solid $gray-mid !important;
 
       &:checked {
-        background-color: #161625 !important;
+        background-color: #6c757d99 !important;
 
         &::after {
           background-color: #cfcfcf !important;
@@ -5025,6 +5097,20 @@ footer {
 
       &::after {
         background-color: #cfcfcf !important;
+      }
+    }
+  }
+
+  .disabled {
+    input {
+      &.switch {
+        background: $dark !important;
+        border: $gray-light 2px solid !important;
+        opacity: .7;
+
+        &::after {
+          background: $gray !important;
+        }
       }
     }
   }
@@ -5164,12 +5250,23 @@ footer {
       background: #1e1e30 !important;
     }
 
+    .react-date-picker {
+      background: #1e1e30;
+      border-color: #9494941a !important;
+    }
+
     .modal-content {
       background: #1e1e30 !important;
     }
 
     .modal {
       background: #1e1e30bb !important;
+    }
+  }
+
+  .Clusters {
+    canvas {
+      filter: invert(1) hue-rotate(180deg) saturate(5);
     }
   }
 }

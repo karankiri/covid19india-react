@@ -1,9 +1,12 @@
+import {testedToolTip} from './tooltips';
+
 import {sliceTimeseriesFromEnd, formatNumber} from '../utils/commonfunctions';
 import {useResizeObserver} from '../utils/hooks';
 
 import * as d3 from 'd3';
 import moment from 'moment';
 import React, {useState, useEffect, useRef, useCallback} from 'react';
+import * as Icon from 'react-feather';
 
 function TimeSeries(props) {
   const [lastDaysCount, setLastDaysCount] = useState(
@@ -135,20 +138,10 @@ function TimeSeries(props) {
 
       let yScales;
       if (plotTotal) {
-        let uniformScaleMin = Infinity;
-        dataTypesTotal.forEach((type) => {
-          uniformScaleMin = Math.min(
-            uniformScaleMin,
-            d3.min(timeseries, (d) => (isNaN(d[type]) ? 0 : d[type]))
-          );
-        });
-        let uniformScaleMax = 0;
-        dataTypesTotal.forEach((type) => {
-          uniformScaleMax = Math.max(
-            uniformScaleMax,
-            d3.max(timeseries, (d) => (isNaN(d[type]) ? 0 : d[type]))
-          );
-        });
+        const uniformScaleMin = d3.min(timeseries, (d) =>
+          Math.min(d.totalactive, d.totalrecovered, d.totaldeceased)
+        );
+        const uniformScaleMax = d3.max(timeseries, (d) => d.totalconfirmed);
         const yScaleUniformLinear = d3
           .scaleLinear()
           .clamp(true)
@@ -188,8 +181,9 @@ function TimeSeries(props) {
             ])
             .nice()
             .range([chartBottom, margin.top]);
-          if (logMode) return mode ? yScaleUniformLog : yScaleLog;
-          else return mode ? yScaleUniformLinear : yScaleLinear;
+          if (mode && type !== 'totaltested')
+            return logMode ? yScaleUniformLog : yScaleUniformLinear;
+          else return logMode ? yScaleLog : yScaleLinear;
         });
       } else {
         const yScaleDailyUniform = d3
@@ -213,6 +207,7 @@ function TimeSeries(props) {
           .range([chartBottom, margin.top]);
 
         yScales = dataTypesDaily.map((type) => {
+          if (mode) return yScaleDailyUniform;
           const yScaleLinear = d3
             .scaleLinear()
             .clamp(true)
@@ -226,7 +221,7 @@ function TimeSeries(props) {
             ])
             .nice()
             .range([chartBottom, margin.top]);
-          return mode ? yScaleDailyUniform : yScaleLinear;
+          return yScaleLinear;
         });
       }
 
@@ -504,7 +499,9 @@ function TimeSeries(props) {
         {chartType === 1 && (
           <div className="svg-parent is-purple">
             <div className="stats is-purple">
-              <h5 className={`${!moving ? 'title' : ''}`}>Tested</h5>
+              <h5 className={`${!moving ? 'title' : ''}`}>
+                Tested {props.isTotal ? testedToolTip : ''}
+              </h5>
               <h5 className={`${moving ? 'title' : ''}`}>{`${dateStr}`}</h5>
               <div className="stats-bottom">
                 <h2>{formatNumber(datapoint.totaltested)}</h2>
@@ -542,6 +539,13 @@ function TimeSeries(props) {
         >
           2 Weeks
         </button>
+      </div>
+
+      <div className="alert is-purple">
+        <Icon.AlertOctagon />
+        <div className="alert-right">
+          Tested chart is independent of uniform scaling
+        </div>
       </div>
     </React.Fragment>
   );
